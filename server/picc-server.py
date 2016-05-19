@@ -25,7 +25,12 @@ else:
 
 
 class VideoStitcher:
-    pass
+    _video_id = None
+    _name = None
+
+    def __init__(self, video_id, name):
+        self._video_id = video_id
+        self._name = name
 
 
 @app.route("/auth/<secret>/<public_key>", methods=['GET'])
