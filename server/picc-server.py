@@ -25,11 +25,9 @@ else:
 
 
 class VideoStitcher:
-    _video_id = None
     _name = None
 
-    def __init__(self, video_id, name):
-        self._video_id = video_id
+    def __init__(self, name):
         self._name = name
 
 
