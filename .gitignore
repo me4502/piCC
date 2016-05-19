@@ -106,3 +106,5 @@ target/
 
 #Ipython Notebook
 .ipynb_checkpoints
+
+/server/picc
