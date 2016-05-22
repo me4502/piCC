@@ -1,4 +1,4 @@
-# import picamera
+import picamera
 import gzip
 import configparser
 import os

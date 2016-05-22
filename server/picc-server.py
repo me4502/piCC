@@ -70,6 +70,7 @@ def auth(secret=None):
 
     exported_public_key = key_pair.publickey().exportKey(passphrase=secret)
 
+    # Use an AES key, because this library doesn't support CFB over an RSA key.
     aes_key = hashlib.sha256(str(uuid.uuid4()).encode("utf-8")).digest()
 
     encryptor = AES.new(aes_key, AES.MODE_CFB, IV=16 * '\x00')
