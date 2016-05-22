@@ -5,8 +5,10 @@ import os
 import uuid
 import json
 import base64
+import hashlib
 
 from Crypto.PublicKey import RSA
+from Crypto.Cipher import AES
 from Crypto import Random
 
 app = Flask(__name__)
@@ -19,8 +21,8 @@ config = configparser.ConfigParser()
 shared_secret = None
 
 # Public/Private KeyPair Generation
-random_generator = Random.new().read
-key_pair = RSA.generate(1024, random_generator)
+print("Generating KeyPair")
+key_pair = RSA.generate(2048, Random.new().read)
 
 # Initial Setup
 if not os.path.isfile(FILE_NAME):
@@ -46,7 +48,7 @@ class VideoStitcher:
             os.makedirs(self._name)
 
 
-@app.route("/auth/<secret>", methods=['GET'])
+@app.route("/auth/<secret>", methods=['POST'])
 def auth(secret=None):
     if not secret:
         abort(400)
@@ -55,12 +57,9 @@ def auth(secret=None):
         abort(401)
         return
 
-    json_data = request.get_json()
-    print(json_data)
+    json_data = json.loads(request.get_json())
 
-    # TODO do the json_data
-
-    public_key = None
+    public_key = base64.b64decode(json_data['public_key'].encode("utf-8"))
 
     try:
         imported_client_key = RSA.importKey(public_key, passphrase=secret)
@@ -69,9 +68,18 @@ def auth(secret=None):
         abort(400)
         return
 
-    encrypted_key = imported_client_key.encrypt(key_pair.publickey().exportKey(passphrase=secret), K=32)[0]
+    exported_public_key = key_pair.publickey().exportKey(passphrase=secret)
 
-    output_json = {"response": base64.b64encode(encrypted_key).decode("utf-8")}
+    aes_key = hashlib.sha256(str(uuid.uuid4()).encode("utf-8")).digest()
+
+    encryptor = AES.new(aes_key, AES.MODE_CFB, IV=16 * '\x00')
+
+    encrypted_public_key = encryptor.encrypt(exported_public_key)
+
+    encrypted_aes_key = imported_client_key.publickey().encrypt(aes_key, K=32)[0]
+
+    output_json = {"key": base64.b64encode(encrypted_aes_key).decode("utf-8"),
+                   "response": base64.b64encode(encrypted_public_key).decode("utf-8")}
 
     return json.dumps(output_json)
 
@@ -82,13 +90,14 @@ def send_image(video_name=None):
         abort(400)
         return
 
-    json_data = request.get_json()
-    print(json_data)
+    json_data = json.loads(request.get_json())
 
-    # TODO do the json_data
+    encrypted_png_data = json_data['image']
+    aes_key = key_pair.decrypt(base64.b64decode(json_data['key'].encode("utf-8")))
 
-    encrypted_png_data = None
-    compressed_png_data = key_pair.decrypt(base64.b64decode(encrypted_png_data.encode("utf-8")))
+    encryptor = AES.new(aes_key, AES.MODE_CFB, IV=16 * '\x00')
+
+    compressed_png_data = encryptor.decrypt(base64.b64decode(encrypted_png_data.encode("utf-8")))
 
     png_data = gzip.decompress(compressed_png_data)
 
