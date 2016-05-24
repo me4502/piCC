@@ -106,8 +106,6 @@ def main():
 
     while True:
         pir.wait_for_motion():
-        batchname = datetime.now().strftime("%Y-%m-%d_%H.%M.%S.h264")
-        
         while motion_detected():
                 filename = datetime.now().strftime("%Y-%m-%d_%H.%M.%S.h264")
                 image = camera.capture(filename,format=jpeg)
