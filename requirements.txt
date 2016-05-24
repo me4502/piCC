@@ -1,4 +1,6 @@
+gpiozero
 requests==2.10.0
 pycrypto==2.6.1
 picamera==1.10
 flask==0.10.1
+pillow
