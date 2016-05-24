@@ -110,7 +110,7 @@ def main():
         
         while motion_detected():
                 filename = datetime.now().strftime("%Y-%m-%d_%H.%M.%S.h264")
-                camera.capture(filename,format=jpeg)
+                image = camera.capture(filename,format=jpeg)
+                send_image(image)
                 sleep(0.2)
                 
-        //batch files & send
