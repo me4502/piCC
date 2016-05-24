@@ -1,4 +1,3 @@
-import picamera
 import gzip
 import configparser
 import os
@@ -7,7 +6,7 @@ import json
 import base64
 import requests
 import hashlib
-from io import StringIO
+from io import StringIO, BytesIO
 
 from PIL import Image
 
@@ -17,9 +16,7 @@ from Crypto import Random
 
 from picamera import PiCamera
 from gpiozero import MotionSensor
-from datetime import datetime
 from time import sleep
-
 
 FILE_NAME = "picc/config.conf"
 if not os.path.exists("picc"):
@@ -99,18 +96,17 @@ def send_image(image):
 
 authenticate()
 
-# Do the stuff with the camera and motion sensor.
-def main():
-    camera = PiCamera()
-    pir = MotionSensor(4)
 
-    while True:
-        pir.wait_for_motion():
-        batchname = datetime.now().strftime("%Y-%m-%d_%H.%M.%S.h264")
-        
-        while motion_detected():
-                filename = datetime.now().strftime("%Y-%m-%d_%H.%M.%S.h264")
-                camera.capture(filename,format=jpeg)
-                sleep(0.2)
-                
-        //batch files & send
+# Do the stuff with the camera and motion sensor.
+camera = PiCamera()
+pir = MotionSensor(4)
+
+while True:
+    pir.wait_for_motion()
+
+    for a in range(5):
+        stream = BytesIO()
+        camera.capture(stream, format='png')
+        stream.seek(0)
+        send_image(Image.open(stream))
+        sleep(0.2)
