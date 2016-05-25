@@ -1,10 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "layout.html" %}
 
-</body>
-</html>
+{% set title = 'piCC - Motion CCTV' %}
+
+{% block body %}
+    <p>Please click one of the following videos:</p>
+    <ul>
+        {% for video in videos %}
+            <li><a href="/video/{{ video }}">{{ video }}</a></li>
+        {% endfor %}
+    </ul>
+{% endblock %}
