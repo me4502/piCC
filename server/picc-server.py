@@ -6,6 +6,9 @@ import uuid
 import json
 import base64
 import hashlib
+import subprocess
+import time
+import threading
 
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import AES
@@ -19,6 +22,9 @@ if not os.path.exists("picc"):
 
 config = configparser.ConfigParser()
 shared_secret = None
+
+# Video File Lock
+lock = threading.Lock()
 
 # Public/Private KeyPair Generation
 print("Generating KeyPair")
@@ -35,17 +41,6 @@ else:
     config.read(FILE_NAME)
     # Load Shared Secret
     shared_secret = config.get(configparser.DEFAULTSECT, "shared-secret")
-
-
-class VideoStitcher:
-    _name = None
-
-    def __init__(self, name):
-        self._name = name
-
-    def setup(self):
-        if not os.path.exists(self._name):
-            os.makedirs(self._name)
 
 
 @app.route("/auth/<secret>", methods=['POST'])
@@ -91,7 +86,10 @@ def send_image(video_name=None):
         abort(400)
         return
 
-    json_data = json.loads(request.get_json())
+    if not os.path.exists(video_name):
+        os.mkdir(video_name)
+
+    json_data = request.get_json()
 
     encrypted_png_data = json_data['image']
     aes_key = key_pair.decrypt(base64.b64decode(json_data['key'].encode("utf-8")))
@@ -102,9 +100,34 @@ def send_image(video_name=None):
 
     png_data = gzip.decompress(compressed_png_data)
 
-    # TODO do the png_data
+    file_name = "{}/{}".format(video_name, time.time())
 
-    pass
+    lock.acquire()
+
+    temp_file = open(file_name + ".png", "wb+")
+    temp_file.write(png_data)
+    temp_file.close()
+
+    subprocess.call("ffmpeg -f image2 -framerate 2 -i {}.png -c mpeg4 {}.mp4".format(file_name, file_name), shell=True)
+
+    if os.path.exists("{}/main.mp4".format(video_name)):
+        # Join Them
+        concat_file = open("concat.txt", "w+")
+        concat_file.write("file '" + video_name + "/main.mp4'\n")
+        concat_file.write("file '" + file_name + ".mp4'")
+        concat_file.close()
+
+        subprocess.call("ffmpeg -y -f concat -i concat.txt -c copy {}/main.mp4".format(video_name), shell=True)
+        os.remove("concat.txt")
+    else:
+        os.rename(file_name + ".mp4", "{}/main.mp4".format(video_name))
+
+    os.remove(file_name + ".png")
+    if os.path.exists(file_name + ".mp4"):
+        os.remove(file_name + ".mp4")
+
+    lock.release()
+    return "Success"
 
 
 if __name__ == "__main__":
