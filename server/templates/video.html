@@ -3,7 +3,8 @@
 {% set title = 'piCC - Watch Video' %}
 
 {% block body %}
-    <a href="/">Back to List</a><br>
+    <h1>{{ video }}</h1>
+    <a href="/">Back to List</a><br><br>
     <video controls="controls">
         <source src="/{{ video }}/main.mp4" type="video/mp4">
         Your browser does not support the video tag.

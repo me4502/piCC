@@ -3,7 +3,12 @@
 {% set title = 'piCC - Motion CCTV' %}
 
 {% block body %}
-    <p>Please click one of the following videos:</p>
+    <h1>piCC</h1>
+    <p>
+        Motion-based CCTV Software on the Raspberry Pi
+        <br><br><br>
+        Please click one of the following videos:
+    </p>
     <ul>
         {% for video in videos %}
             <li><a href="/video/{{ video }}">{{ video }}</a></li>
