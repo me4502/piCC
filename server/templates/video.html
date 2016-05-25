@@ -1,10 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "layout.html" %}
 
-</body>
-</html>
+{% set title = 'piCC - Watch Video' %}
+
+{% block body %}
+    <a href="/">Back to List</a><br>
+    <video controls="controls">
+        <source src="/{{ video }}/main.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+{% endblock %}
