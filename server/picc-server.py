@@ -1,4 +1,4 @@
-from flask import Flask, abort, request
+from flask import Flask, abort, request, render_template, send_from_directory
 import gzip
 import configparser
 import os
@@ -41,6 +41,28 @@ else:
     config.read(FILE_NAME)
     # Load Shared Secret
     shared_secret = config.get(configparser.DEFAULTSECT, "shared-secret")
+
+
+def get_videos():
+    videos_list = next(os.walk('.'))[1]
+    videos_list.remove("picc")
+    videos_list.remove("templates")
+    return videos_list
+
+
+@app.route("/", methods=["GET"])
+def index():
+    return render_template("index.html", videos=get_videos())
+
+
+@app.route("/video/<video>", methods=['GET'])
+def show_video(video):
+    return render_template("video.html", video=video)
+
+
+@app.route("/<video>/main.mp4", methods=['GET'])
+def get_video(video):
+    return send_from_directory(video, "main.mp4")
 
 
 @app.route("/auth/<secret>", methods=['POST'])
@@ -108,7 +130,8 @@ def send_image(video_name=None):
     temp_file.write(png_data)
     temp_file.close()
 
-    subprocess.call("ffmpeg -f image2 -framerate 2 -i {}.png -c mpeg4 {}.mp4".format(file_name, file_name), shell=True)
+    subprocess.call("ffmpeg -f image2 -framerate 2 -i {}.png -vcodec h264 -acodec aac {}.mp4".
+                    format(file_name, file_name), shell=True)
 
     if os.path.exists("{}/main.mp4".format(video_name)):
         # Join Them
