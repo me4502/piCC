@@ -6,7 +6,7 @@ import json
 import base64
 import requests
 import hashlib
-from io import StringIO, BytesIO
+from io import BytesIO
 
 from PIL import Image
 
@@ -71,8 +71,8 @@ def authenticate():
 
     global server_public_key
 
-    server_public_key = encryptor.decrypt(base64.b64decode(auth_response_json['response'].encode("utf-8")))
-    RSA.importKey(server_public_key, passphrase=shared_secret)
+    server_public_key_bytes = encryptor.decrypt(base64.b64decode(auth_response_json['response'].encode("utf-8")))
+    server_public_key = RSA.importKey(server_public_key_bytes, passphrase=shared_secret)
 
 
 # Pass images to this function once they are taken. Pass this a PIL Image
@@ -80,7 +80,7 @@ def send_image(image):
     aes_key = hashlib.sha256(str(uuid.uuid4()).encode("utf-8")).digest()
     encryptor = AES.new(aes_key, AES.MODE_CFB, IV=16 * '\x00')
 
-    output_image = StringIO()
+    output_image = BytesIO()
     image.save(output_image, format="PNG")
 
     encrypted_image = encryptor.encrypt(gzip.compress(output_image.getvalue()))
@@ -95,7 +95,6 @@ def send_image(image):
 
 
 authenticate()
-
 
 # Do the stuff with the camera and motion sensor.
 camera = PiCamera()
