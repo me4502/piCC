@@ -135,13 +135,13 @@ def send_image(video_name=None):
 
     if os.path.exists("{}/main.mp4".format(video_name)):
         # Join Them
-        concat_file = open("concat.txt", "w+")
+        concat_file = open("{}.txt".format(video_name), "w+")
         concat_file.write("file '" + video_name + "/main.mp4'\n")
         concat_file.write("file '" + file_name + ".mp4'")
         concat_file.close()
 
-        subprocess.call("ffmpeg -y -f concat -i concat.txt -c copy {}/main.mp4".format(video_name), shell=True)
-        os.remove("concat.txt")
+        subprocess.call("ffmpeg -y -f concat -i {}.txt -c copy {}/main.mp4".format(video_name, video_name), shell=True)
+        os.remove("{}.txt".format(video_name))
     else:
         os.rename(file_name + ".mp4", "{}/main.mp4".format(video_name))
 
