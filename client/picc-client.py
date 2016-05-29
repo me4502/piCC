@@ -100,9 +100,11 @@ authenticate()
 camera = PiCamera()
 pir = MotionSensor(4)
 
+print("Ready")
 while True:
+    print("Waiting for motion")
     pir.wait_for_motion()
-
+    print("Motion detected")
     for a in range(5):
         stream = BytesIO()
         camera.capture(stream, format='png')
