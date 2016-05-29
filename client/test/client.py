@@ -106,10 +106,10 @@ while True:
     for a in range(6):
         stream = BytesIO()
         stream.seek(0)
-        if (a <= 2):
+        if a <= 2:
           send_image(black.png)
-        else ( 3 <= a <= 4 ):
+        elif 3 <= a <= 4:
           send_image(grey.png)
-        else ( 5 <= a <= 6 ):
+        elif 5 <= a <= 6:
           send_image(white.png)
         sleep(0.2)
