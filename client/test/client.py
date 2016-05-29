@@ -94,22 +94,26 @@ def send_image(image):
     requests.post(server_uri + "/send_image/" + video_name, json=image_data)
 
 
-authenticate()
-
 # Do the stuff with the camera and motion sensor.
-camera = PiCamera()
+#camera = PiCamera()
 pir = MotionSensor(4)
+black = Image.open('black.png')
+grey = Image.open('grey.png')
+white = Image.open('white.png')
 
+print("Ready")
 while True:
+    print("Waiting for motion")
     pir.wait_for_motion()
-
+    print("Motion detected")
     for a in range(6):
         stream = BytesIO()
         stream.seek(0)
         if a <= 2:
-          send_image(black.png)
+          send_image(black)
         elif 3 <= a <= 4:
-          send_image(grey.png)
+          send_image(grey)
         elif 5 <= a <= 6:
-          send_image(white.png)
-        sleep(0.2)
+          send_image(white)
+        sleep(0.1666667)
+
