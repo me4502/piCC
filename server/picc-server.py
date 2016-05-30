@@ -131,7 +131,7 @@ def send_image(video_name=None):
         temp_file.write(png_data)
         temp_file.close()
 
-        subprocess.call("ffmpeg -f image2 -framerate 2 -i {}.png -vcodec h264 -acodec aac {}.mp4".
+        subprocess.call("ffmpeg -hide_banner -f image2 -framerate 2 -i {}.png -vcodec h264 -acodec aac -pix_fmt yuv420p {}.mp4".
                         format(file_name, file_name), shell=True)
 
         if os.path.exists("{}/main.mp4".format(video_name)):
@@ -141,7 +141,7 @@ def send_image(video_name=None):
             concat_file.write("file '" + file_name + ".mp4'")
             concat_file.close()
 
-            subprocess.call("ffmpeg -y -f concat -i {}.txt -c copy {}/main.mp4".format(video_name, video_name), shell=True)
+            subprocess.call("ffmpeg -hide_banner -y -f concat -i {}.txt -c copy {}/main.mp4".format(video_name, video_name), shell=True)
             os.remove("{}.txt".format(video_name))
         else:
             os.rename(file_name + ".mp4", "{}/main.mp4".format(video_name))
