@@ -123,7 +123,9 @@ def send_image(video_name=None):
 
         png_data = gzip.decompress(compressed_png_data)
 
-        file_name = "{}/{}".format(video_name, time.time())
+        time_name = str(time.time())
+
+        file_name = "{}/{}".format(video_name, time_name)
 
         lock.acquire()
 
@@ -131,18 +133,22 @@ def send_image(video_name=None):
         temp_file.write(png_data)
         temp_file.close()
 
-        subprocess.call("ffmpeg -hide_banner -f image2 -framerate 2 -i {}.png -vcodec h264 -acodec aac -pix_fmt yuv420p {}.mp4".
-                        format(file_name, file_name), shell=True)
+        subprocess.call("ffmpeg -hide_banner -f image2 -framerate 2 -i {}.png "
+                        "-vcodec h264 -acodec aac -pix_fmt yuv420p -vf 'scale=trunc(iw/2)*2:trunc(ih/2)*2' "
+                        "{}.mp4".format(file_name, file_name), shell=True)
 
         if os.path.exists("{}/main.mp4".format(video_name)):
             # Join Them
-            concat_file = open("{}.txt".format(video_name), "w+")
+            concat_file = open("{}.txt".format(video_name + time_name), "w+")
             concat_file.write("file '" + video_name + "/main.mp4'\n")
             concat_file.write("file '" + file_name + ".mp4'")
             concat_file.close()
 
-            subprocess.call("ffmpeg -hide_banner -y -f concat -i {}.txt -c copy {}/main.mp4".format(video_name, video_name), shell=True)
-            os.remove("{}.txt".format(video_name))
+            subprocess.call("ffmpeg -hide_banner -y -f concat -i {}.txt -c copy {}/main.mp4"
+                            .format(video_name + time_name, video_name),
+                            shell=True)
+
+            os.remove("{}.txt".format(video_name + time_name))
         else:
             os.rename(file_name + ".mp4", "{}/main.mp4".format(video_name))
 
