@@ -108,49 +108,54 @@ def send_image(video_name=None):
         abort(400)
         return
 
-    if not os.path.exists(video_name):
-        os.mkdir(video_name)
+    try:
+        if not os.path.exists(video_name):
+            os.mkdir(video_name)
 
-    json_data = request.get_json()
+        json_data = request.get_json()
 
-    encrypted_png_data = json_data['image']
-    aes_key = key_pair.decrypt(base64.b64decode(json_data['key'].encode("utf-8")))
+        encrypted_png_data = json_data['image']
+        aes_key = key_pair.decrypt(base64.b64decode(json_data['key'].encode("utf-8")))
 
-    encryptor = AES.new(aes_key, AES.MODE_CFB, IV=16 * '\x00')
+        encryptor = AES.new(aes_key, AES.MODE_CFB, IV=16 * '\x00')
 
-    compressed_png_data = encryptor.decrypt(base64.b64decode(encrypted_png_data.encode("utf-8")))
+        compressed_png_data = encryptor.decrypt(base64.b64decode(encrypted_png_data.encode("utf-8")))
 
-    png_data = gzip.decompress(compressed_png_data)
+        png_data = gzip.decompress(compressed_png_data)
 
-    file_name = "{}/{}".format(video_name, time.time())
+        file_name = "{}/{}".format(video_name, time.time())
 
-    lock.acquire()
+        lock.acquire()
 
-    temp_file = open(file_name + ".png", "wb+")
-    temp_file.write(png_data)
-    temp_file.close()
+        temp_file = open(file_name + ".png", "wb+")
+        temp_file.write(png_data)
+        temp_file.close()
 
-    subprocess.call("ffmpeg -f image2 -framerate 2 -i {}.png -vcodec h264 -acodec aac {}.mp4".
-                    format(file_name, file_name), shell=True)
+        subprocess.call("ffmpeg -f image2 -framerate 2 -i {}.png -vcodec h264 -acodec aac {}.mp4".
+                        format(file_name, file_name), shell=True)
 
-    if os.path.exists("{}/main.mp4".format(video_name)):
-        # Join Them
-        concat_file = open("{}.txt".format(video_name), "w+")
-        concat_file.write("file '" + video_name + "/main.mp4'\n")
-        concat_file.write("file '" + file_name + ".mp4'")
-        concat_file.close()
+        if os.path.exists("{}/main.mp4".format(video_name)):
+            # Join Them
+            concat_file = open("{}.txt".format(video_name), "w+")
+            concat_file.write("file '" + video_name + "/main.mp4'\n")
+            concat_file.write("file '" + file_name + ".mp4'")
+            concat_file.close()
 
-        subprocess.call("ffmpeg -y -f concat -i {}.txt -c copy {}/main.mp4".format(video_name, video_name), shell=True)
-        os.remove("{}.txt".format(video_name))
-    else:
-        os.rename(file_name + ".mp4", "{}/main.mp4".format(video_name))
+            subprocess.call("ffmpeg -y -f concat -i {}.txt -c copy {}/main.mp4".format(video_name, video_name), shell=True)
+            os.remove("{}.txt".format(video_name))
+        else:
+            os.rename(file_name + ".mp4", "{}/main.mp4".format(video_name))
 
-    os.remove(file_name + ".png")
-    if os.path.exists(file_name + ".mp4"):
-        os.remove(file_name + ".mp4")
+        os.remove(file_name + ".png")
+        if os.path.exists(file_name + ".mp4"):
+            os.remove(file_name + ".mp4")
 
-    lock.release()
-    return "Success"
+        lock.release()
+        return "Success"
+    except FileNotFoundError as e:
+        lock.release()
+        print(e)
+        abort(400)
 
 
 if __name__ == "__main__":
