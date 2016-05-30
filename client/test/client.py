@@ -17,6 +17,8 @@ from Crypto import Random
 from picamera import PiCamera
 from gpiozero import MotionSensor
 from time import sleep
+from timeit import default_timer as timer
+import datetime
 
 FILE_NAME = "picc/config.conf"
 if not os.path.exists("picc"):
@@ -99,16 +101,30 @@ authenticate()
 # Do the stuff with the camera and motion sensor.
 #camera = PiCamera()
 pir = MotionSensor(4)
+batch_name = video_name
+now = datetime.datetime.now()
 black = Image.open('black.png')
 grey = Image.open('grey.png')
 white = Image.open('white.png')
 
 
 print("Ready")
-while True:
+print("Video name is: " + video_name)
+video_name = batch_name + now.strftime("_%Y-%m-%d_%Hhours-%Mminutes-%Sseconds")
+print("Batch name is:" + video_name)
+#print ("Time is " + video_name)
+
+while True
+    start_time = timer()
     print("Waiting for motion")
     pir.wait_for_motion()
     print("Motion detected")
+    elapsed_time = timer() - start_time
+    if elapsed_time > 10:
+        print ("New batch: Over 10 seconds elapsed")
+        now = datetime.datetime.now()
+        video_name = batch_name +  now.strftime("_%Y-%m-%d_%Hhours-%Mminutes-%Seconds")
+        print ("Batch name: " + video_name)
     for a in range(6):
         stream = BytesIO()
         stream.seek(0)
