@@ -17,6 +17,10 @@ __pycache__/
 .idea/dictionaries
 .idea/vcs.xml
 .idea/jsLibraryMappings.xml
+.idea/encodings.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/piCC.iml
 
 # Sensitive or high-churn files:
 .idea/dataSources.ids
@@ -109,3 +113,4 @@ target/
 
 /client/picc
 /server/picc
+/client/test/
