@@ -112,7 +112,7 @@ video_name = batch_name + now.strftime("_%Y-%m-%d_%Hhours-%Mminutes-%Sseconds")
 print("Batch name is:" + video_name)
 
 
-While True:
+while True:
     start_time = timer()
     print("Waiting for motion")
     pir.wait_for_motion()
